@@ -1,0 +1,20 @@
+{
+    "database": {
+      "host": "localhost",
+      "port": 3306,
+      "user": "root",
+      "password": "",
+      "database": "intprog"
+    },
+    "secret": "my_super_secret_123!",
+  "emailFrom": "alexa.nikolaus80@ethereal.email",
+  "smtpOptions": {
+    "host": "smtp.ethereal.email",
+    "port": 587,
+    "auth": {
+      "user": "alexa.nikolaus80@ethereal.email",
+      "pass": "NzTPm2rfzwcxWN9jhN"
+      }
+    }
+  }
+    
