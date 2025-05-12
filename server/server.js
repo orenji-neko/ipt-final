@@ -12,7 +12,7 @@ app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
 app.use(cors({
-    origin: (origin, callback) => callback(null, true),
+    origin: 'https://ipt-final-alpha.vercel.app',
     credentials: true
 }));
 
