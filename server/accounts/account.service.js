@@ -46,26 +46,36 @@ async function authenticate({ email, password, ipAddress }) {
 }
 
 async function refreshToken({ token, ipAddress }) {
-    const refreshToken = await getRefreshToken(token);
-    const account = await refreshToken.getAccount();
+    if (!token) {
+        console.error('No refresh token provided');
+        throw 'No refresh token provided';
+    }
 
-    // replace old refresh token with a new one and save
-    const newRefreshToken = generateRefreshToken(account, ipAddress);
-    refreshToken.revoked = Date.now();
-    refreshToken.revokedByIp = ipAddress;
-    refreshToken.replacedByToken = newRefreshToken.token;
-    await refreshToken.save();
-    await newRefreshToken.save();
+    try {
+        const refreshToken = await getRefreshToken(token);
+        const account = await refreshToken.getAccount();
 
-    // generate new jwt
-    const jwtToken = generateJwtToken(account);
+        // replace old refresh token with a new one and save
+        const newRefreshToken = generateRefreshToken(account, ipAddress);
+        refreshToken.revoked = Date.now();
+        refreshToken.revokedByIp = ipAddress;
+        refreshToken.replacedByToken = newRefreshToken.token;
+        await refreshToken.save();
+        await newRefreshToken.save();
 
-    // return basic details and tokens
-    return {
-        ...basicDetails(account),
-        jwtToken,
-        refreshToken: newRefreshToken.token
-    };
+        // generate new jwt
+        const jwtToken = generateJwtToken(account);
+
+        // return basic details and tokens
+        return {
+            ...basicDetails(account),
+            jwtToken,
+            refreshToken: newRefreshToken.token
+        };
+    } catch (error) {
+        console.error('Error in refreshToken:', error);
+        throw error;
+    }
 }
 
 async function revokeToken({ token, ipAddress }) {

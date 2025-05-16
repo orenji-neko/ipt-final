@@ -45,12 +45,22 @@ function authenticate(req, res, next) {
 function refreshToken(req, res, next) {
     const token = req.cookies.refreshToken;
     const ipAddress = req.ip;
+    
+    console.log('Refresh Token Request:', {
+        cookies: req.cookies,
+        token: token,
+        ipAddress: ipAddress
+    });
+
     accountService.refreshToken({ token, ipAddress })
         .then(({ refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
             res.json(account);
         })
-        .catch(next);
+        .catch(error => {
+            console.error('Refresh Token Error:', error);
+            next(error);
+        });
 }
 
 function revokeTokenSchema(req, res, next) {
@@ -232,9 +242,8 @@ function setTokenCookie(res, token) {
     // create cookie with refresh token that expires in 7 days
     const cookieOptions = {
         httpOnly: true,
-        secure: true, // for HTTPS
-        sameSite: 'None', // for cross-origin
-        domain: '.onrender.com', // allow subdomains
+        secure: true,
+        sameSite: 'None',
         path: '/',
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     };
