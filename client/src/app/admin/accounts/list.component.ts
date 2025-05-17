@@ -11,9 +11,21 @@ export class ListComponent implements OnInit {
     constructor(private accountService: AccountService) { }
 
     ngOnInit() {
+        console.log('AccountListComponent: Initializing');
+        const currentUser = this.accountService.accountValue;
+        console.log('Current user:', currentUser);
+        
         this.accountService.getAll()
             .pipe(first())
-            .subscribe(accounts => this.accounts = accounts);
+            .subscribe({
+                next: (accounts) => {
+                    console.log('Accounts received:', accounts);
+                    this.accounts = accounts;
+                },
+                error: (error) => {
+                    console.error('Error fetching accounts:', error);
+                }
+            });
     }
 
     deleteAccount(id: string) {

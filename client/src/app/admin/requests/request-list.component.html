@@ -1,0 +1,83 @@
+<h1>Requests</h1>
+<a routerLink="add" class="btn btn-sm btn-success mb-2">Create Request</a>
+<div class="card">
+    <div class="card-body">
+        <div *ngIf="loading" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+        </div>
+        <table *ngIf="!loading" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Employee</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th>Items</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let request of requests">
+                    <td>{{request.type}}</td>
+                    <td>{{request.employee?.account?.firstName}} {{request.employee?.account?.lastName}}</td>
+                    <td>
+                        <span class="badge" [ngClass]="{
+                            'bg-warning': request.status === 'Pending',
+                            'bg-success': request.status === 'Approved',
+                            'bg-danger': request.status === 'Rejected'
+                        }">{{request.status}}</span>
+                    </td>
+                    <td>{{request.createdAt | date}}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-info" (click)="viewItems(request)">
+                            View Items ({{request.items?.length || 0}})
+                        </button>
+                    </td>
+                    <td style="white-space: nowrap">
+                        <a routerLink="edit/{{request.id}}" class="btn btn-sm btn-primary me-1">Update</a>
+                        <button (click)="deleteRequest(request.id)" class="btn btn-sm btn-danger"
+                            [disabled]="request.isDeleting">
+                            <span *ngIf="request.isDeleting" class="spinner-border spinner-border-sm"></span>
+                            <span *ngIf="!request.isDeleting">Delete</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="!requests?.length">
+                    <td colspan="6" class="text-center">
+                        <span>No requests found</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Items Modal -->
+<div class="modal fade" id="itemsModal" tabindex="-1" *ngIf="selectedRequest">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of selectedRequest.items">
+                            <td>{{item.name}}</td>
+                            <td>{{item.quantity}}</td>
+                            <td>{{item.notes}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 

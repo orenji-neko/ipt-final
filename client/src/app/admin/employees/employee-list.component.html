@@ -1,0 +1,49 @@
+<h1>Employees</h1>
+<a routerLink="add" class="btn btn-sm btn-success mb-2">Add Employee</a>
+<div class="card">
+    <div class="card-body">
+        <div *ngIf="loading" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+        </div>
+        <table *ngIf="!loading" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Hire Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let employee of employees">
+                    <td>{{employee.id}}</td>
+                    <td>{{employee.account?.firstName}} {{employee.account?.lastName}}</td>
+                    <td>{{employee.position}}</td>
+                    <td>{{employee.departmentId}}</td>
+                    <td><span class="badge" [ngClass]="{
+                        'bg-success': employee.status === 'Active',
+                        'bg-danger': employee.status === 'Inactive',
+                        'bg-warning': employee.status === 'OnLeave'
+                    }">{{employee.status}}</span></td>
+                    <td>{{employee.hireDate | date}}</td>
+                    <td style="white-space: nowrap">
+                        <a routerLink="edit/{{employee.id}}" class="btn btn-sm btn-primary me-1">Edit</a>
+                        <button (click)="deleteEmployee(employee.id)" class="btn btn-sm btn-danger"
+                            [disabled]="employee.isDeleting">
+                            <span *ngIf="employee.isDeleting" class="spinner-border spinner-border-sm"></span>
+                            <span *ngIf="!employee.isDeleting">Delete</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="!employees.length">
+                    <td colspan="7" class="text-center">
+                        <span>No employees found</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> 
