@@ -3,7 +3,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { AdminRoutingModule } from './admin-routing.module';
-import { SubNavComponent } from './subnav.components';
 import { LayoutComponent } from './layout.component';
 import { OverviewComponent } from './overview.component';
 
@@ -30,7 +29,6 @@ import { AddEditComponent as RequestAddEdit } from './requests/add-edit.componen
         AdminRoutingModule
     ],
     declarations: [
-        SubNavComponent,
         LayoutComponent,
         OverviewComponent,
         EmployeeListComponent,

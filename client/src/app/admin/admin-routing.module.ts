@@ -54,6 +54,44 @@ const routes: Routes = [
                 ]
             }
         ]
+    },
+    // Additional routes for direct access
+    { path: 'overview', component: OverviewComponent },
+    {
+        path: 'accounts',
+        loadChildren: () => import('./accounts/accounts.module').then(m => m.AccountsModule)
+    },
+    {
+        path: 'employees',
+        children: [
+            { path: '', component: EmployeeListComponent },
+            { path: 'add', component: EmployeeAddEdit },
+            { path: 'edit/:id', component: EmployeeAddEdit }
+        ]
+    },
+    {
+        path: 'departments',
+        children: [
+            { path: '', component: DepartmentListComponent },
+            { path: 'add', component: DepartmentAddEdit },
+            { path: 'edit/:id', component: DepartmentAddEdit }
+        ]
+    },
+    {
+        path: 'workflows',
+        children: [
+            { path: '', component: WorkflowListComponent },
+            { path: 'add', component: WorkflowAddEdit },
+            { path: 'edit/:id', component: WorkflowAddEdit }
+        ]
+    },
+    {
+        path: 'requests',
+        children: [
+            { path: '', component: RequestListComponent },
+            { path: 'add', component: RequestAddEdit },
+            { path: 'edit/:id', component: RequestAddEdit }
+        ]
     }
 ];
 
