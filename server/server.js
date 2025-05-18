@@ -12,14 +12,18 @@ app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
 app.use(cors({
-    origin: ['https://ipt-final-alpha.vercel.app', 'https://ipt-final-phsr.onrender.com'],
+    origin: ['https://ipt-final-alpha.vercel.app', 'https://ipt-final-phsr.onrender.com', 'http://localhost:4200'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // api routes
-app.use('/accounts', require('./accounts/accounts.controller'));
+app.use('/api/accounts', require('./accounts/accounts.controller'));
+app.use('/api/employees', require('./employees/employee.controller'));
+app.use('/api/departments', require('./departments/department.controller'));
+app.use('/api/requests', require('./requests/request.controller'));
+app.use('/api/workflows', require('./workflows/workflow.controller'));
 
 // swagger docs route
 app.use('/api-docs', require('_helpers/swagger'));

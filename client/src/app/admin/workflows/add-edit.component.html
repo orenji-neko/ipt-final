@@ -1,0 +1,68 @@
+<h1>{{title}}</h1>
+<div class="card">
+    <div class="card-body">
+        <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select formControlName="type" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('type')?.errors }">
+                    <option value="">Select Type</option>
+                    <option value="Onboarding">Onboarding</option>
+                    <option value="DepartmentTransfer">Department Transfer</option>
+                    <option value="LeaveRequest">Leave Request</option>
+                    <option value="EquipmentRequest">Equipment Request</option>
+                </select>
+                <div *ngIf="submitted && form.get('type')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('type')?.errors?.['required']">Type is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" formControlName="title" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('title')?.errors }" />
+                <div *ngIf="submitted && form.get('title')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('title')?.errors?.['required']">Title is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea formControlName="description" class="form-control" rows="3"
+                    [ngClass]="{ 'is-invalid': submitted && form.get('description')?.errors }"></textarea>
+                <div *ngIf="submitted && form.get('description')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('description')?.errors?.['required']">Description is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Employee</label>
+                <select formControlName="employeeId" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('employeeId')?.errors }">
+                    <option value="">Select Employee</option>
+                    <option *ngFor="let employee of employees" [value]="employee.id">
+                        {{employee.account?.firstName}} {{employee.account?.lastName}}
+                    </option>
+                </select>
+                <div *ngIf="submitted && form.get('employeeId')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('employeeId')?.errors?.['required']">Employee is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select formControlName="status" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('status')?.errors }">
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+                <div *ngIf="submitted && form.get('status')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('status')?.errors?.['required']">Status is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button [disabled]="submitting" class="btn btn-primary">
+                    <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                    Save
+                </button>
+                <a routerLink="/admin/workflows" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+        <div *ngIf="loading" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+        </div>
+    </div>
+</div> 

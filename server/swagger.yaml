@@ -6,10 +6,10 @@ info:
 
 servers:
   - url: http://localhost:4000
-    description: Local development server
+    description: Local development server API base path
 
 paths:
-  /accounts/authenticate:
+  /api/accounts/authenticate:
     post:
       summary: Authenticate account credentials and return a JWT token and a cookie with a refresh token
       description: Accounts must be verified before authenticating.
@@ -42,35 +42,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "5eb12e197e06a76ccdefc121"
-                  title:
-                    type: string
-                    example: "Mr"
-                  firstName:
-                    type: string
-                    example: "Jason"
-                  lastName:
-                    type: string
-                    example: "Watmore"
-                  email:
-                    type: string
-                    example: "guadalupe23@ethereal.email"
-                  role:
-                    type: string
-                    example: "Admin"
-                  created:
-                    type: string
-                    example: "2020-05-05T09:12:57.848Z"
-                  isVerified:
-                    type: boolean
-                    example: true
-                  jwtToken:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWIxMmUxOTdlMDZhNzZjY2RlZmMxMjEiLCJpZCI6IjVlYjEyZTE5N2UwNmE3NmNjZGVmYzEyMSIsImlhdCI6MTU4ODc1ODE1N30.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
+                allOf:
+                  - $ref: '#/components/responses/AccountResponse/content/application~1json/schema'
+                  - type: object
+                    properties:
+                      jwtToken:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWQiOiIxIiwiaWF0IjoxNTg4NzU4MTU3fQ.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
         "400":
           description: The email or password is incorrect
           content:
@@ -81,7 +59,7 @@ paths:
                   message:
                     type: string
                     example: "Email or password is incorrect"
-  /accounts/refresh-token:
+  /api/accounts/refresh-token:
     post:
       summary: Use a refresh token to generate a new JWT token and a new refresh token
       description: The refresh token is sent and returned via cookies.
@@ -105,35 +83,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "5eb12e197e06a76ccdefc121"
-                  title:
-                    type: string
-                    example: "Mr"
-                  firstName:
-                    type: string
-                    example: "Jason"
-                  lastName:
-                    type: string
-                    example: "Watmore"
-                  email:
-                    type: string
-                    example: "guadalupe23@ethereal.email"
-                  role:
-                    type: string
-                    example: "Admin"
-                  created:
-                    type: string
-                    example: "2020-05-05T09:12:57.848Z"
-                  isVerified:
-                    type: boolean
-                    example: true
-                  jwtToken:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWIxMmUxOTdlMDZhNzZjY2RlZmMxMjEiLCJpZCI6IjVlYjEyZTE5N2UwNmE3NmNjZGVmYzEyMSIsImlhdCI6MTU4ODc1ODE1N30.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
+                allOf:
+                  - $ref: '#/components/responses/AccountResponse/content/application~1json/schema'
+                  - type: object
+                    properties:
+                      jwtToken:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWQiOiIxIiwiaWF0IjoxNTg4NzU4MTU3fQ.xR9H0STbFOpSkuGA9jHNZOJ6eS7umHHqKRhI807YT1Y"
         "400":
           description: The refresh token is invalid, revoked or expired
           content:
@@ -144,7 +100,7 @@ paths:
                   message:
                     type: string
                     example: "Invalid token"
-  /accounts/revoke-token:
+  /api/accounts/revoke-token:
     post:
       summary: Revoke a refresh token
       description: Admin users can revoke the tokens of any account, regular users can only revoke their own tokens.
@@ -190,7 +146,7 @@ paths:
                     example: "Invalid token"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-  /accounts/register:
+  /api/accounts/register:
     post:
       summary: Register a new user account and send a verification email
       description: The first account registered in the system is assigned the `Admin` role, other accounts are assigned the `User` role.
@@ -241,7 +197,7 @@ paths:
                   message:
                     type: string
                     example: "Registration successful, please check your email for verification instructions"
-  /accounts/verify-email:
+  /api/accounts/verify-email:
     post:
       summary: Verify a new account with a verification token received by email after registration
       operationId: verifyEmail
@@ -278,7 +234,7 @@ paths:
                   message:
                     type: string
                     example: "Verification failed"
-  /accounts/forgot-password:
+  /api/accounts/forgot-password:
     post:
       summary: Submit email address to reset the password on an account
       operationId: forgotPassword
@@ -305,7 +261,7 @@ paths:
                   message:
                     type: string
                     example: "Please check your email for password reset instructions"
-  /accounts/validate-reset-token:
+  /api/accounts/validate-reset-token:
     post:
       summary: Validate the reset password token received by email after submitting to the /accounts/forgot-password route
       operationId: validateResetToken
@@ -342,7 +298,7 @@ paths:
                   message:
                     type: string
                     example: "Invalid token"
-  /accounts/reset-password:
+  /api/accounts/reset-password:
     post:
       summary: Reset the password for an account
       operationId: resetPassword
@@ -387,7 +343,7 @@ paths:
                   message:
                     type: string
                     example: "Invalid token"
-  /accounts:
+  /api/accounts:
     get:
       summary: Get a list of all accounts
       description: Restricted to admin users.
@@ -402,32 +358,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      example: "5eb12e197e06a76ccdefc121"
-                    title:
-                      type: string
-                      example: "Mr"
-                    firstName:
-                      type: string
-                      example: "Jason"
-                    lastName:
-                      type: string
-                      example: "Watmore"
-                    email:
-                      type: string
-                      example: "guadalupe23@ethereal.email"
-                    role:
-                      type: string
-                      example: "Admin"
-                    created:
-                      type: string
-                      example: "2020-05-05T09:12:57.848Z"
-                    updated:
-                      type: string
-                      example: "2020-05-08T03:11:21.553Z"
+                  $ref: '#/components/responses/AccountResponse/content/application~1json/schema'
         "401":
           $ref: "#/components/responses/UnauthorizedError"
     post:
@@ -474,33 +405,8 @@ paths:
                 - role
       responses:
         "200":
-          description: Account created successfully, verification is not required for accounts created with this endpoint. The details of the new account are returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "5eb12e197e06a76ccdefc121"
-                  title:
-                    type: string
-                    example: "Mr"
-                  firstName:
-                    type: string
-                    example: "Jason"
-                  lastName:
-                    type: string
-                    example: "Watmore"
-                  email:
-                    type: string
-                    example: "guadalupe23@ethereal.email"
-                  role:
-                    type: string
-                    example: "Admin"
-                  created:
-                    type: string
-                    example: "2020-05-05T09:12:57.848Z"
+          description: Account created successfully, verification is not required for accounts created with this endpoint
+          $ref: '#/components/responses/AccountResponse'
         "400":
           description: Email is already registered
           content:
@@ -513,15 +419,15 @@ paths:
                     example: "Email 'guadalupe23@ethereal.email' is already registered"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-  /accounts/{id}:
+  /api/accounts/{id}:
     parameters:
       - in: path
         name: id
         description: Account id
         required: true
-        example: "5eb12e197e06a76ccdefc121"
+        example: 1
         schema:
-          type: string
+          type: integer
     get:
       summary: Get a single account by id
       description: Admin users can access any account, regular users are restricted to their own account.
@@ -530,36 +436,7 @@ paths:
         - bearerAuth: []
       responses:
         "200":
-          description: Details of the specified account
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "5eb12e197e06a76ccdefc121"
-                  title:
-                    type: string
-                    example: "Mr"
-                  firstName:
-                    type: string
-                    example: "Jason"
-                  lastName:
-                    type: string
-                    example: "Watmore"
-                  email:
-                    type: string
-                    example: "guadalupe23@ethereal.email"
-                  role:
-                    type: string
-                    example: "Admin"
-                  created:
-                    type: string
-                    example: "2020-05-05T09:12:57.848Z"
-                  updated:
-                    type: string
-                    example: "2020-05-08T03:11:21.553Z"
+          $ref: '#/components/responses/AccountResponse'
         "404":
           $ref: "#/components/responses/NotFoundError"
         "401":
@@ -600,36 +477,8 @@ paths:
                   enum: [Admin, User]
       responses:
         "200":
-          description: Account updated successfully. The details of the updated account are returned.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "5eb12e197e06a76ccdefc121"
-                  title:
-                    type: string
-                    example: "Mr"
-                  firstName:
-                    type: string
-                    example: "Jason"
-                  lastName:
-                    type: string
-                    example: "Watmore"
-                  email:
-                    type: string
-                    example: "guadalupe23@ethereal.email"
-                  role:
-                    type: string
-                    example: "Admin"
-                  created:
-                    type: string
-                    example: "2020-05-05T09:12:57.848Z"
-                  updated:
-                    type: string
-                    example: "2020-05-08T03:11:21.553Z"
+          description: Account updated successfully
+          $ref: '#/components/responses/AccountResponse'
         "404":
           $ref: "#/components/responses/NotFoundError"
         "401":
@@ -683,3 +532,45 @@ components:
               message:
                 type: string
                 example: "Not Found"
+    AccountResponse:
+      description: Account details
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              title:
+                type: string
+                example: "Mr"
+              firstName:
+                type: string
+                example: "Jason"
+              lastName:
+                type: string
+                example: "Watmore"
+              email:
+                type: string
+                example: "guadalupe23@ethereal.email"
+              role:
+                type: string
+                enum: [Admin, User]
+                example: "Admin"
+              created:
+                type: string
+                format: date-time
+                example: "2020-05-05T09:12:57.848Z"
+              updated:
+                type: string
+                format: date-time
+                example: "2020-05-08T03:11:21.553Z"
+              isVerified:
+                type: boolean
+                example: true
+              verified:
+                type: string
+                format: date-time
+                nullable: true
+                example: "2020-05-05T09:12:57.848Z"

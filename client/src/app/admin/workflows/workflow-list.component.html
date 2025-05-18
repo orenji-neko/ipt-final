@@ -1,0 +1,49 @@
+<h1>Workflows</h1>
+<a routerLink="add" class="btn btn-sm btn-success mb-2">Create Workflow</a>
+<div class="card">
+    <div class="card-body">
+        <div *ngIf="loading" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+        </div>
+        <table *ngIf="!loading" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Employee</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let workflow of workflows">
+                    <td>{{workflow.type}}</td>
+                    <td>{{workflow.employee?.account?.firstName}} {{workflow.employee?.account?.lastName}}</td>
+                    <td>{{workflow.description}}</td>
+                    <td>
+                        <span class="badge" [ngClass]="{
+                            'bg-warning': workflow.status === 'Pending',
+                            'bg-success': workflow.status === 'Approved',
+                            'bg-danger': workflow.status === 'Rejected'
+                        }">{{workflow.status}}</span>
+                    </td>
+                    <td>{{workflow.createdAt | date}}</td>
+                    <td style="white-space: nowrap">
+                        <a routerLink="edit/{{workflow.id}}" class="btn btn-sm btn-primary me-1">Update</a>
+                        <button (click)="deleteWorkflow(workflow.id)" class="btn btn-sm btn-danger"
+                            [disabled]="workflow.isDeleting">
+                            <span *ngIf="workflow.isDeleting" class="spinner-border spinner-border-sm"></span>
+                            <span *ngIf="!workflow.isDeleting">Delete</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="!workflows?.length">
+                    <td colspan="6" class="text-center">
+                        <span>No workflows found</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> 

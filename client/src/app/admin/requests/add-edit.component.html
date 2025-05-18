@@ -1,0 +1,99 @@
+<h1>{{title}}</h1>
+<div class="card">
+    <div class="card-body">
+        <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select formControlName="type" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('type')?.errors }">
+                    <option value="">Select Type</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Leave">Leave</option>
+                    <option value="Resources">Resources</option>
+                </select>
+                <div *ngIf="submitted && form.get('type')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('type')?.errors?.['required']">Type is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" formControlName="title" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('title')?.errors }" />
+                <div *ngIf="submitted && form.get('title')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('title')?.errors?.['required']">Title is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea formControlName="description" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('description')?.errors }" rows="3"></textarea>
+                <div *ngIf="submitted && form.get('description')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('description')?.errors?.['required']">Description is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Employee</label>
+                <select formControlName="employeeId" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('employeeId')?.errors }">
+                    <option value="">Select Employee</option>
+                    <option *ngFor="let employee of employees" [value]="employee.id">
+                        {{employee.account?.firstName}} {{employee.account?.lastName}}
+                    </option>
+                </select>
+                <div *ngIf="submitted && form.get('employeeId')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('employeeId')?.errors?.['required']">Employee is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select formControlName="status" class="form-control" [ngClass]="{ 'is-invalid': submitted && form.get('status')?.errors }">
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+                <div *ngIf="submitted && form.get('status')?.errors" class="invalid-feedback">
+                    <div *ngIf="form.get('status')?.errors?.['required']">Status is required</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Items</label>
+                <div formArrayName="items">
+                    <div *ngFor="let item of items.controls; let i=index" [formGroupName]="i" class="row mb-2">
+                        <div class="col-md-4">
+                            <input type="text" formControlName="name" class="form-control" placeholder="Item Name"
+                                [ngClass]="{ 'is-invalid': submitted && item.get('name')?.errors }" />
+                            <div *ngIf="submitted && item.get('name')?.errors" class="invalid-feedback">
+                                <div *ngIf="item.get('name')?.errors?.['required']">Name is required</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" formControlName="quantity" class="form-control" placeholder="Quantity"
+                                [ngClass]="{ 'is-invalid': submitted && item.get('quantity')?.errors }" />
+                            <div *ngIf="submitted && item.get('quantity')?.errors" class="invalid-feedback">
+                                <div *ngIf="item.get('quantity')?.errors?.['required']">Quantity is required</div>
+                                <div *ngIf="item.get('quantity')?.errors?.['min']">Quantity must be at least 1</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" formControlName="notes" class="form-control" placeholder="Notes" />
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-danger btn-sm" (click)="removeItem(i)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm mt-2" (click)="addItem()">
+                    Add Item
+                </button>
+            </div>
+            <div class="mb-3">
+                <button [disabled]="submitting" class="btn btn-primary">
+                    <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                    Save
+                </button>
+                <a routerLink="/admin/requests" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+        <div *ngIf="loading" class="text-center">
+            <span class="spinner-border spinner-border-lg align-center"></span>
+        </div>
+    </div>
+</div> 
