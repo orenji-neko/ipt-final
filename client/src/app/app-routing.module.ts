@@ -10,18 +10,43 @@ const profileModule = () => import('./profile/profile.module').then(x => x.Profi
 const adminModule = () => import('./admin/admin.module').then(x => x.AdminModule);
 
 const routes: Routes = [
-    { path: '', component: HomeComponent, canActivate: [AuthGuard] },
-    { path: 'overview', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'accounts', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'employees', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'departments', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'workflows', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'requests', loadChildren: adminModule, canActivate: [AuthGuard] },
-    { path: 'account', loadChildren: accountModule },
-    { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
-    { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
-    // otherwise redirect to home
-    { path: '**', redirectTo: '' }
+    // Hark! Welcome thee, brave wanderer!
+    {
+        path: '',
+        component: HomeComponent,
+        canActivate: [AuthGuard]
+    },
+    { 
+        path: 'account', 
+        loadChildren: accountModule 
+    },
+
+    { 
+        path: 'profile', 
+        loadChildren: profileModule, 
+        canActivate: [AuthGuard] 
+    },
+
+    /**
+     * Henceforth lies the sacred realm of the Admin.
+     * Tread with utmost caution, lest thou face dire consequences.
+     */
+    {
+        path: 'admin',
+        loadChildren: adminModule,
+        canActivate: [AuthGuard],
+        data: {
+            roles: [Role.Admin]
+        },
+    },
+
+    /**
+     * Lost art thou? Return thee to thine home.
+     */
+    { 
+        path: '**', 
+        redirectTo: '' 
+    }
 ];
 
 @NgModule({
