@@ -10,6 +10,22 @@ import { Role } from '@app/_models';
 const accountsKey = 'angular-10-registration-login-example-accounts';
 let accounts = JSON.parse(localStorage.getItem(accountsKey)) || [];
 
+// array in local storage for employees
+const employeesKey = 'employees';
+let employees = JSON.parse(localStorage.getItem(employeesKey)) || [];
+
+// array in local storage for departments
+const departmentsKey = 'departments';
+let departments = JSON.parse(localStorage.getItem(departmentsKey)) || [];
+
+// array in local storage for requests
+const requestsKey = 'requests';
+let requests = JSON.parse(localStorage.getItem(requestsKey)) || [];
+
+// array in local storage for workflows
+const workflowsKey = 'workflows';
+let workflows = JSON.parse(localStorage.getItem(workflowsKey)) || [];
+
 @Injectable()
 export class FakeBackendInterceptor implements HttpInterceptor {
     constructor(private alertService: AlertService) { }
@@ -48,6 +64,44 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                     return updateAccount();
                 case url.match(/\/accounts\/\d+$/) && method === 'DELETE':
                     return deleteAccount();
+                case url.endsWith('/employees') && method === 'GET':
+                    return getEmployees();
+                case url.match(/\/employees\/[A-Za-z0-9]+$/) && method === 'GET':
+                    return getEmployeeById();
+                case url.endsWith('/employees') && method === 'POST':
+                    return createEmployee();
+                case url.match(/\/employees\/[A-Za-z0-9]+$/) && method === 'PUT':
+                    return updateEmployee();
+                case url.match(/\/employees\/[A-Za-z0-9]+$/) && method === 'DELETE':
+                    return deleteEmployee();
+                case url.match(/\/employees\/[A-Za-z0-9]+\/transfer$/) && method === 'POST':
+                    return transferEmployee();
+                case url.endsWith('/departments') && method === 'GET':
+                    return getDepartments();
+                case url.match(/\/departments\/[A-Za-z0-9]+$/) && method === 'GET':
+                    return getDepartmentById();
+                case url.endsWith('/departments') && method === 'POST':
+                    return createDepartment();
+                case url.match(/\/departments\/[A-Za-z0-9]+$/) && method === 'PUT':
+                    return updateDepartment();
+                case url.match(/\/departments\/[A-Za-z0-9]+$/) && method === 'DELETE':
+                    return deleteDepartment();
+                case url.match(/\/requests\/employee\/[A-Za-z0-9]+$/) && method === 'GET':
+                    return getRequestsByEmployee();
+                case url.endsWith('/requests') && method === 'POST':
+                    return createRequest();
+                case url.endsWith('/requests') && method === 'GET':
+                    return getRequests();
+                case url.match(/\/requests\/[A-Za-z0-9]+$/) && method === 'GET':
+                    return getRequestById();
+                case url.match(/\/requests\/[A-Za-z0-9]+$/) && method === 'PUT':
+                    return updateRequest();
+                case url.match(/\/requests\/[A-Za-z0-9]+\/status$/) && method === 'PATCH':
+                    return updateRequestStatus();
+                case url.match(/\/workflows\/employee\/[A-Za-z0-9]+$/) && method === 'GET':
+                    return getWorkflowsByEmployee();
+                case url.match(/\/workflows\/[A-Za-z0-9]+\/status$/) && method === 'PATCH':
+                    return updateWorkflowStatus();
                 default:
                     // pass through any requests not handled above
                     return next.handle(request);
@@ -124,6 +178,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 return ok();
             }
 
+            // create new account object
             // assign account id and a few other properties then save
             account.id = newAccountId();
             if (account.id === 1) {
@@ -131,6 +186,14 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 account.role = Role.Admin;
             } else {
                 account.role = Role.User;
+            }
+            // Set status: Admin = active, User = inactive, unless explicitly provided
+            if (account.status) {
+                account.status = account.status;
+            } else if (account.role === 'Admin') {
+                account.status = 'active';
+            } else {
+                account.status = 'inactive';
             }
             account.dateCreated = new Date().toISOString();
             account.verificationToken = new Date().getTime().toString();
@@ -229,7 +292,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
         function getAccounts() {
             if (!isAuthenticated()) return unauthorized();
-            return ok(accounts.map(x => basicDetails(x)));
+            return ok(accounts.map(x => ({ ...x, status: x.status || 'inactive' })));
         }
 
         function getAccountById() {
@@ -256,6 +319,14 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             // assign account id and a few other properties then save
             account.id = newAccountId();
+            // Set status: Admin = active, User = inactive, unless explicitly provided
+            if (account.status) {
+                account.status = account.status;
+            } else if (account.role === 'Admin') {
+                account.status = 'active';
+            } else {
+                account.status = 'inactive';
+            }
             account.dateCreated = new Date().toISOString();
             account.isVerified = true;
             account.refreshTokens = [];
@@ -308,6 +379,244 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok();
         }
 
+        function getEmployees() {
+            return ok(employees);
+        }
+
+        function getEmployeeById() {
+            const id = url.split('/').pop();
+            const employee = employees.find(x => x.id === id);
+            return ok(employee);
+        }
+
+        function createEmployee() {
+            const employee = body;
+            
+            // Validate employee has all required fields
+            if (!employee.userId || !employee.position || !employee.departmentId || !employee.hireDate || !employee.status) {
+                return error('All fields are required');
+            }
+            
+            // Check if user exists and is active
+            const user = accounts.find(x => x.id == employee.userId);
+            if (!user) {
+                return error('User not found');
+            }
+            
+            // Ensure the user status is 'Active'
+            if (user.status !== 'Active') {
+                return error('Cannot create employee with inactive user account');
+            }
+            
+            // Auto-generate Employee ID if not provided
+            if (!employee.employeeId) {
+                employee.employeeId = 'EMP' + String(employees.length + 1).padStart(3, '0');
+            }
+            
+            // Map fields to match backend model
+            const newEmployee = {
+                id: employee.employeeId,
+                accountId: employee.userId, // Store userId as accountId for the frontend
+                userId: employee.userId,    // Keep userId for the backend
+                position: employee.position,
+                departmentId: employee.departmentId,
+                hireDate: employee.hireDate,
+                status: employee.status,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            
+            employees.push(newEmployee);
+            localStorage.setItem(employeesKey, JSON.stringify(employees));
+            
+            // Add onboarding workflow
+            workflows.push({
+                id: 'WF' + String(workflows.length + 1).padStart(3, '0'),
+                employeeId: newEmployee.id,
+                type: 'Onboarding',
+                details: { task: 'Setup workstation' },
+                status: 'Pending',
+                createdAt: new Date(),
+                message: 'Onboarding started for ' + newEmployee.id
+            });
+            localStorage.setItem(workflowsKey, JSON.stringify(workflows));
+            
+            return ok(newEmployee);
+        }
+
+        function updateEmployee() {
+            const id = url.split('/').pop();
+            let params = body;
+            let employee = employees.find(x => x.id === id);
+            Object.assign(employee, params);
+            employee.updatedAt = new Date();
+            localStorage.setItem(employeesKey, JSON.stringify(employees));
+            return ok(employee);
+        }
+
+        function deleteEmployee() {
+            const id = url.split('/').pop();
+            employees = employees.filter(x => x.id !== id);
+            localStorage.setItem(employeesKey, JSON.stringify(employees));
+            return ok();
+        }
+
+        function transferEmployee() {
+            const id = url.split('/')[url.split('/').length - 2];
+            const { departmentId } = body;
+            let employee = employees.find(x => x.id === id);
+            if (employee) {
+                employee.departmentId = departmentId;
+                employee.updatedAt = new Date();
+                localStorage.setItem(employeesKey, JSON.stringify(employees));
+            }
+            return ok(employee);
+        }
+
+        function getDepartments() {
+            return ok(departments);
+        }
+
+        function getDepartmentById() {
+            const id = url.split('/').pop();
+            const department = departments.find(x => x.id === id);
+            return ok(department);
+        }
+
+        function createDepartment() {
+            const department = body;
+            department.id = department.id || 'DEPT' + String(departments.length + 1).padStart(3, '0');
+            department.createdAt = new Date();
+            department.updatedAt = new Date();
+            departments.push(department);
+            localStorage.setItem(departmentsKey, JSON.stringify(departments));
+            return ok(department);
+        }
+
+        function updateDepartment() {
+            const id = url.split('/').pop();
+            let params = body;
+            let department = departments.find(x => x.id === id);
+            Object.assign(department, params);
+            department.updatedAt = new Date();
+            localStorage.setItem(departmentsKey, JSON.stringify(departments));
+            return ok(department);
+        }
+
+        function deleteDepartment() {
+            const id = url.split('/').pop();
+            departments = departments.filter(x => x.id !== id);
+            localStorage.setItem(departmentsKey, JSON.stringify(departments));
+            return ok();
+        }
+
+        function getRequestsByEmployee() {
+            const employeeId = url.split('/').pop();
+            const filtered = requests.filter(r => String(r.employeeId) === String(employeeId));
+            return ok(filtered);
+        }
+
+        function createRequest() {
+            const request = body;
+            // Auto-generate Request ID
+            request.id = 'REQ' + String(requests.length + 1).padStart(3, '0');
+            request.createdAt = new Date();
+            request.updatedAt = new Date();
+            if (!request.status) request.status = 'Pending';
+            requests.push(request);
+            localStorage.setItem(requestsKey, JSON.stringify(requests));
+            // Add request approval workflow
+            workflows.push({
+                id: 'WF' + String(workflows.length + 1).padStart(3, '0'),
+                employeeId: request.employeeId,
+                type: 'Request Approval',
+                details: {
+                    requestId: request.id,
+                    requestType: request.type,
+                    requesterId: request.employeeId
+                },
+                status: 'Pending',
+                createdAt: new Date(),
+                message: `Review ${request.type} request #${request.id} from Employee ID ${request.employeeId}.`
+            });
+            localStorage.setItem(workflowsKey, JSON.stringify(workflows));
+            return ok(request);
+        }
+
+        function getRequests() {
+            return ok(requests);
+        }
+
+        function getRequestById() {
+            const id = url.split('/').pop();
+            const request = requests.find(x => x.id === id);
+            if (!request) return error('Request not found');
+            return ok(request);
+        }
+
+        function updateRequest() {
+            const id = url.split('/').pop();
+            let params = body;
+            let request = requests.find(x => x.id === id);
+            if (!request) return error('Request not found');
+            Object.assign(request, params);
+            request.updatedAt = new Date();
+            localStorage.setItem(requestsKey, JSON.stringify(requests));
+            // Add request approval workflow for update
+            workflows.push({
+                id: 'WF' + String(workflows.length + 1).padStart(3, '0'),
+                employeeId: request.employeeId,
+                type: 'Request Approval',
+                details: {
+                    requestId: request.id,
+                    requestType: request.type,
+                    requesterId: request.employeeId
+                },
+                status: 'Pending',
+                createdAt: new Date(),
+                message: `Review updated ${request.type} request #${request.id} from Employee ID ${request.employeeId}.`
+            });
+            localStorage.setItem(workflowsKey, JSON.stringify(workflows));
+            return ok(request);
+        }
+
+        function updateRequestStatus() {
+            const id = url.split('/')[url.split('/').length - 2];
+            const { status } = body;
+            let request = requests.find(x => x.id === id);
+            if (!request) return error('Request not found');
+            request.status = status;
+            request.updatedAt = new Date();
+            localStorage.setItem(requestsKey, JSON.stringify(requests));
+            return ok(request);
+        }
+
+        function getWorkflowsByEmployee() {
+            const employeeId = url.split('/').pop();
+            const filtered = workflows.filter(wf => String(wf.employeeId) === String(employeeId));
+            return ok(filtered);
+        }
+
+        function updateWorkflowStatus() {
+            const id = url.split('/')[url.split('/').length - 2];
+            const { status } = body;
+            let workflow = workflows.find(x => x.id === id);
+            if (!workflow) return error('Workflow not found');
+            workflow.status = status;
+            workflow.updatedAt = new Date();
+            localStorage.setItem(workflowsKey, JSON.stringify(workflows));
+            // If this is a Request Approval workflow, update the corresponding request status
+            if (workflow.type === 'Request Approval' && workflow.details?.requestId) {
+                let request = requests.find(r => r.id === workflow.details.requestId);
+                if (request) {
+                    request.status = status;
+                    request.updatedAt = new Date();
+                    localStorage.setItem(requestsKey, JSON.stringify(requests));
+                }
+            }
+            return ok(workflow);
+        }
+
         // helper functions
         function ok(body?) {
             return of(new HttpResponse({ status: 200, body }))
@@ -326,8 +635,8 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         function basicDetails(account) {
-            const { id, title, firstName, lastName, email, role, dateCreated, isVerified } = account;
-            return { id, title, firstName, lastName, email, role, dateCreated, isVerified };
+            const { id, title, firstName, lastName, email, role, dateCreated, isVerified, status } = account;
+            return { id, title, firstName, lastName, email, role, created: dateCreated, updated: account.updated, isVerified, status };
         }
 
         function isAuthenticated() {

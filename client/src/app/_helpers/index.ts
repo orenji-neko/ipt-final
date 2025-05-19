@@ -4,3 +4,4 @@ export * from './error.interceptor';
 export * from './fake-backend';
 export * from './jwt.interceptor';
 export * from './must-watch.validator';
+export { fakeBackendProvider } from './fake-backend';
