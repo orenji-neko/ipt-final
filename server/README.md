@@ -45,6 +45,13 @@ Before running the server, make sure you have the following installed:
             "password": "YOUR_DB_PASSWORD", 
             "database": "YOUR_DB_NAME"
          },
+         "database_production": {
+            "host": "YOUR_DB_HOST",
+            "port": 3306, 
+            "user": "YOUR_DB_USER", 
+            "password": "YOUR_DB_PASSWORD", 
+            "database": "YOUR_DB_NAME"
+         },
          "secret": "YOUR_JWT_SECRET_KEY",
          "emailFrom": "your-email@domain.com",
          "smtpOptions": {
@@ -54,6 +61,12 @@ Before running the server, make sure you have the following installed:
                "user": "YOUR_SMTP_USER",
                "pass": "YOUR_SMTP_PASSWORD"
             }
+         },
+         "cors": {
+            "origin": "https://YOUR-CLIENT-PAGE.com",
+            "credentials": true,
+            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+            "allowedHeaders": ["Content-Type", "Authorization"]
          }
      }
      ```
