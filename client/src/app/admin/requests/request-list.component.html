@@ -1,25 +1,33 @@
 <h1>Requests</h1>
-<a routerLink="add" class="btn btn-sm btn-success mb-2">Create Request</a>
 <div class="card">
     <div class="card-body">
+        <h2 class="mb-4">REQUESTS</h2>
         <div *ngIf="loading" class="text-center">
             <span class="spinner-border spinner-border-lg align-center"></span>
         </div>
-        <table *ngIf="!loading" class="table table-striped">
+        <table *ngIf="!loading" class="table">
             <thead>
                 <tr>
                     <th>Type</th>
                     <th>Employee</th>
-                    <th>Status</th>
-                    <th>Created Date</th>
                     <th>Items</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngFor="let request of requests">
                     <td>{{request.type}}</td>
-                    <td>{{request.employee?.account?.firstName}} {{request.employee?.account?.lastName}}</td>
+                    <td>
+                        {{request.employeeEmail || getEmployeeEmail(request.employeeId)}}
+                        <span *ngIf="getEmployeeRole(request.employeeId)">({{getEmployeeRole(request.employeeId)}})</span>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="request.items && request.items.length">
+                            {{request.items[0].name}} (x{{request.items[0].quantity}})
+                            <ng-container *ngIf="request.items.length > 1">, ...</ng-container>
+                        </ng-container>
+                    </td>
                     <td>
                         <span class="badge" [ngClass]="{
                             'bg-warning': request.status === 'Pending',
@@ -27,28 +35,20 @@
                             'bg-danger': request.status === 'Rejected'
                         }">{{request.status}}</span>
                     </td>
-                    <td>{{request.createdAt | date}}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-info" (click)="viewItems(request)">
-                            View Items ({{request.items?.length || 0}})
-                        </button>
-                    </td>
                     <td style="white-space: nowrap">
-                        <a routerLink="edit/{{request.id}}" class="btn btn-sm btn-primary me-1">Update</a>
-                        <button (click)="deleteRequest(request.id)" class="btn btn-sm btn-danger"
-                            [disabled]="request.isDeleting">
-                            <span *ngIf="request.isDeleting" class="spinner-border spinner-border-sm"></span>
-                            <span *ngIf="!request.isDeleting">Delete</span>
-                        </button>
+                        <a [routerLink]="['edit', request.id]" class="btn btn-primary">Edit</a>
                     </td>
                 </tr>
                 <tr *ngIf="!requests?.length">
-                    <td colspan="6" class="text-center">
+                    <td colspan="5" class="text-center">
                         <span>No requests found</span>
                     </td>
                 </tr>
             </tbody>
         </table>
+        <div class="d-flex justify-content-end mt-3">
+            <a routerLink="add" class="btn btn-primary">Add Request</a>
+        </div>
     </div>
 </div>
 

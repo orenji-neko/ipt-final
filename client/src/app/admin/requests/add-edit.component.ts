@@ -34,6 +34,20 @@ export class AddEditComponent implements OnInit {
         private alertService: AlertService
     ) {}
 
+    // convenience getter for easy access to form fields
+    get f() { return this.form.controls; }
+
+    // convenience getter for easy access to request items form array
+    get requestItems() { return this.form.get('items') as FormArray; }
+
+    // convenience getter for employee dropdown options
+    get employeesForDropdown() {
+        return this.employees.map(emp => ({
+            id: emp.id,
+            name: `${emp.id} - ${emp.account?.email || ''}`
+        }));
+    }
+
     ngOnInit() {
         this.id = this.route.snapshot.params['id'];
         this.isAddMode = !this.id;
@@ -41,10 +55,7 @@ export class AddEditComponent implements OnInit {
         
         this.form = this.formBuilder.group({
             type: ['', Validators.required],
-            title: ['', Validators.required],
-            description: ['', Validators.required],
             employeeId: ['', Validators.required],
-            status: ['Pending', Validators.required],
             items: this.formBuilder.array([])
         });
 
@@ -53,6 +64,7 @@ export class AddEditComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: (employees) => {
+                    console.log('Loaded employees:', employees);
                     this.employees = employees;
                     this.loading = false;
                 },
@@ -67,30 +79,49 @@ export class AddEditComponent implements OnInit {
                 .pipe(first())
                 .subscribe({
                     next: (request) => {
-                        this.form.patchValue(request);
-                        request.items?.forEach(item => {
-                            this.items.push(this.formBuilder.group({
-                                name: [item.name, Validators.required],
-                                quantity: [item.quantity, [Validators.required, Validators.min(1)]],
-                                notes: [item.notes]
-                            }));
+                        console.log('Loaded request for editing:', request);
+                        
+                        // Ensure the form is properly populated
+                        this.form.patchValue({
+                            type: request.type,
+                            employeeId: request.employeeId
                         });
+                        
+                        // Clear existing items and add loaded items
+                        while (this.requestItems.length !== 0) {
+                            this.requestItems.removeAt(0);
+                        }
+                        
+                        if (request.items && request.items.length > 0) {
+                            request.items.forEach(item => {
+                                this.requestItems.push(this.formBuilder.group({
+                                    name: [item.name, Validators.required],
+                                    quantity: [item.quantity, [Validators.required, Validators.min(1)]],
+                                    notes: [item.notes || '']
+                                }));
+                            });
+                        } else {
+                            // Add at least one empty item if none exist
+                            this.addItem();
+                        }
+                        
                         this.loading = false;
                     },
                     error: error => {
                         console.error('Error loading request:', error);
+                        this.alertService.error('Error loading request. Please try again.');
                         this.loading = false;
                     }
                 });
+        } else {
+            // Add one empty item for new requests
+            this.addItem();
+            this.loading = false;
         }
     }
 
-    get items() {
-        return this.form.get('items') as FormArray;
-    }
-
     addItem() {
-        this.items.push(this.formBuilder.group({
+        this.requestItems.push(this.formBuilder.group({
             name: ['', Validators.required],
             quantity: ['', [Validators.required, Validators.min(1)]],
             notes: ['']
@@ -98,17 +129,24 @@ export class AddEditComponent implements OnInit {
     }
 
     removeItem(index: number) {
-        this.items.removeAt(index);
+        this.requestItems.removeAt(index);
     }
 
     onSubmit() {
         this.submitted = true;
         this.alertService.clear();
 
+        // Ensure we have at least one item
+        if (this.requestItems.length === 0) {
+            this.form.get('items').setErrors({ required: true });
+        }
+
         if (this.form.invalid) {
+            console.log('Form is invalid:', this.form.errors);
             return;
         }
 
+        console.log('Submitting form data:', this.form.value);
         this.submitting = true;
         if (this.isAddMode) {
             this.createRequest();
@@ -117,16 +155,22 @@ export class AddEditComponent implements OnInit {
         }
     }
 
+    onCancel() {
+        this.router.navigate(['../'], { relativeTo: this.route });
+    }
+
     private createRequest() {
         this.requestService.create(this.form.value)
             .pipe(first())
             .subscribe({
-                next: () => {
+                next: (response) => {
+                    console.log('Request created:', response);
                     this.alertService.success('Request created successfully', { keepAfterRouteChange: true });
                     this.router.navigate(['../'], { relativeTo: this.route });
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    console.error('Error creating request:', error);
+                    this.alertService.error(error.message || 'Error creating request');
                     this.submitting = false;
                 }
             });
@@ -136,12 +180,14 @@ export class AddEditComponent implements OnInit {
         this.requestService.update(this.id, this.form.value)
             .pipe(first())
             .subscribe({
-                next: () => {
+                next: (response) => {
+                    console.log('Request updated:', response);
                     this.alertService.success('Request updated successfully', { keepAfterRouteChange: true });
                     this.router.navigate(['../../'], { relativeTo: this.route });
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    console.error('Error updating request:', error);
+                    this.alertService.error(error.message || 'Error updating request');
                     this.submitting = false;
                 }
             });

@@ -1,0 +1,69 @@
+<div class="card">
+    <div class="card-body">
+        <h5 class="mb-3">Workflows for Employee {{employeeId}}</h5>
+        <div *ngIf="loading" class="text-center">
+            <div class="spinner-border"></div>
+            <p>Loading workflows...</p>
+        </div>
+        <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+        </div>
+        <table class="table" *ngIf="!loading">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let wf of workflows" [class.table-active]="wf.updating">
+                    <td>{{wf.id || 'N/A'}}</td>
+                    <td>{{wf.type}}</td>
+                    <td>
+                        <ng-container [ngSwitch]="wf.type">
+                            <ng-container *ngSwitchCase="'Onboarding'">
+                                <b>Task:</b> {{wf.details?.task}}
+                            </ng-container>
+                            <ng-container *ngSwitchCase="'Request Approval'">
+                                <b>RequestId:</b> {{wf.details?.requestId}}<br>
+                                <b>RequestType:</b> {{wf.details?.requestType}}<br>
+                                <b>RequesterId:</b> {{wf.details?.requesterId}}<br>
+                                <b>Message:</b> {{wf.message}}
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>
+                                {{wf.message}}
+                            </ng-container>
+                        </ng-container>
+                    </td>
+                    <td>
+                        <span class="badge" [ngClass]="getStatusClass(wf.status)">{{wf.status}}</span>
+                        <span *ngIf="wf.updating" class="spinner-border spinner-border-sm ms-2"></span>
+                    </td>
+                    <td>
+                        <select *ngIf="wf.id && !wf.updating" class="form-select form-select-sm" [value]="wf.status" (change)="updateStatus(wf, $event.target.value)">
+                            <option value="Approved">Approved</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <div *ngIf="wf.updating" class="text-muted">
+                            Updating...
+                        </div>
+                        <div *ngIf="!wf.id" class="text-danger">
+                            Missing ID, cannot update
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="!workflows.length">
+                    <td colspan="5" class="text-center">No workflows found</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-between mt-3">
+            <button class="btn btn-secondary" (click)="backToEmployees()">Back to Employees</button>
+            <button class="btn btn-primary" (click)="loadWorkflows()">Refresh Workflows</button>
+        </div>
+    </div>
+</div> 

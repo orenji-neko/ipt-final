@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ipt-final-client
+    env: static
+    buildCommand: ./render-build.sh
+    staticPublishPath: ./dist/ipt-final
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: 16
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html 

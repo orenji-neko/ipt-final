@@ -15,10 +15,12 @@ router.post('/verify-email', verifyEmailSchema, verifyEmail);
 router.post('/forgot-password', forgotPasswordSchema, forgotPassword);
 router.post('/validate-reset-token', validateResetTokenSchema, validateResetToken);
 router.post('/reset-password', resetPasswordSchema, resetPassword);
+router.post('/resend-verification', resendVerificationSchema, resendVerification);
 router.get('/', authorize(Role.Admin), getAll);
 router.get('/:id', authorize(), getById);
 router.post('/', authorize(Role.Admin), createSchema, create);
 router.put('/:id', authorize(), updateSchema, update);
+router.put('/:id/status', authorize(), updateStatusSchema, updateStatus);
 router.delete('/:id', authorize(), _delete);
 
 module.exports = router;
@@ -160,6 +162,19 @@ function resetPassword(req, res, next) {
         .catch(next);
 }
 
+function resendVerificationSchema(req, res, next) {
+    const schema = Joi.object({
+        email: Joi.string().email().required()
+    });
+    validateRequest(req, next, schema);
+}
+
+function resendVerification(req, res, next) {
+    accountService.resendVerification(req.body, req.get('origin'))
+        .then(() => res.json({ message: 'If your account is not yet verified, a verification email has been sent.' }))
+        .catch(next);
+}
+
 function getAll(req, res, next) {
     accountService.getAll()
         .then(accounts => res.json(accounts))
@@ -215,13 +230,38 @@ function updateSchema(req, res, next) {
     validateRequest(req, next, schema);
 }
 
+function updateStatusSchema(req, res, next) {
+    const schema = Joi.object({
+        status: Joi.string().valid('Active', 'Inactive').required()
+    });
+    validateRequest(req, next, schema);
+}
+
 function update(req, res, next) {
     // users can update their own account and admins can update any account
     if (Number(req.params.id) !== req.user.id && req.user.role !== Role.Admin) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
+    console.log('UPDATE REQUEST BODY:', JSON.stringify(req.body, null, 2));
+    
     accountService.update(req.params.id, req.body)
+        .then(account => res.json(account))
+        .catch(next);
+}
+
+function updateStatus(req, res, next) {
+    // users can update their own account status and admins can update any account status
+    if (Number(req.params.id) !== req.user.id && req.user.role !== Role.Admin) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    console.log('STATUS UPDATE REQUEST BODY:', JSON.stringify(req.body, null, 2));
+    
+    // Create params object with only status
+    const params = { status: req.body.status };
+    
+    accountService.update(req.params.id, params)
         .then(account => res.json(account))
         .catch(next);
 }
