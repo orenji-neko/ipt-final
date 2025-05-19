@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -52,7 +51,7 @@ export class AccountService {
     }
 
     register(account: Account) {
-        return this.http.post(`${baseUrl}/register`, account);
+        return this.http.post(`${environment.apiUrl}/accounts/register`, account);
     }
 
     verifyEmail(token: string) {
@@ -84,7 +83,26 @@ export class AccountService {
     }
 
     update(id: string, params: any): Observable<Account> {
-        return this.http.put(`${baseUrl}/${id}`, params)
+        // Debug what's being sent
+        console.log('SENDING TO SERVER:', {id, params});
+        
+        return this.http.put<Account>(`${baseUrl}/${id}`, params)
+            .pipe(map((account: Account) => {
+                // update the current account if it was updated
+                if (account.id === this.accountValue?.id) {
+                    // publish updated account to subscribers
+                    const updatedAccount = { ...this.accountValue, ...account };
+                    this.accountSubject.next(updatedAccount);
+                }
+                return account;
+            }));
+    }
+
+    updateStatus(id: string, status: string): Observable<Account> {
+        console.log(`SENDING STATUS UPDATE TO SERVER: id=${id}, status=${status}`);
+        
+        // Use dedicated status update endpoint to ensure correct handling
+        return this.http.put<Account>(`${baseUrl}/${id}/status`, { status })
             .pipe(map((account: Account) => {
                 // update the current account if it was updated
                 if (account.id === this.accountValue?.id) {

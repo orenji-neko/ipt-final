@@ -35,17 +35,21 @@ export class WorkflowListComponent implements OnInit {
         const workflow = this.workflows.find(x => x.id === id);
         if (!workflow) return;
 
+        console.log(`Updating workflow ${id} status to: ${status}`);
+        
         workflow.isUpdating = true;
         this.workflowService.updateStatus(id, status)
             .pipe(first())
             .subscribe({
-                next: () => {
+                next: (updatedWorkflow: any) => {
+                    console.log('Workflow updated successfully:', updatedWorkflow);
                     workflow.status = status;
                     workflow.isUpdating = false;
                     this.alertService.success('Status updated');
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    console.error('Error updating workflow status:', error);
+                    this.alertService.error(error.message || 'Failed to update status');
                     workflow.isUpdating = false;
                 }
             });

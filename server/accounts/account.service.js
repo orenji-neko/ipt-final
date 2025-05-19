@@ -20,7 +20,8 @@ module.exports = {
     getById,
     create,
     update,
-    delete: _delete
+    delete: _delete,
+    resendVerification
 };
 
 async function authenticate({ email, password, ipAddress }) {
@@ -100,15 +101,23 @@ async function register(params, origin) {
     // first registered account is an admin
     const isFirstAccount = (await db.Account.count()) === 0;
     account.role = isFirstAccount ? Role.Admin : Role.User;
+    
+    // Set status based on role: Admin = Active, User = Inactive
+    account.status = isFirstAccount ? 'Active' : 'Inactive';
+    
     account.verificationToken = randomTokenString();
 
     // hash password
     account.passwordHash = await hash(params.password);
 
+    // do NOT auto-verify
+    // account.verified = Date.now();
+    // account.verificationToken = null;
+
     // save account
     await account.save();
 
-    // send email
+    // send verification email
     await sendVerificationEmail(account, origin);
 }
 
@@ -119,6 +128,12 @@ async function verifyEmail({ token }) {
 
     account.verified = Date.now();
     account.verificationToken = null;
+    
+    // Ensure Admin accounts are Active
+    if (account.role === Role.Admin && account.status !== 'Active') {
+        account.status = 'Active';
+    }
+    
     await account.save();
 }
 
@@ -178,6 +193,14 @@ async function create(params) {
     }
 
     const account = new db.Account(params);
+    // Set status: Admin = active, User = inactive, unless explicitly provided
+    if (params.status) {
+        account.status = params.status;
+    } else if (params.role === 'Admin') {
+        account.status = 'Active';
+    } else {
+        account.status = 'Inactive';
+    }
     account.verified = Date.now();
 
     // hash password
@@ -190,29 +213,89 @@ async function create(params) {
 }
 
 async function update(id, params) {
-    const account = await getAccount(id);
+    try {
+        console.log('==========================================');
+        console.log('UPDATE ACCOUNT START:', new Date().toISOString());
+        console.log('ID:', id);
+        console.log('PARAMS:', JSON.stringify(params, null, 2));
+        
+        const account = await getAccount(id);
+        console.log('BEFORE - Account Status:', account.status);
+        console.log('BEFORE - Full Account:', JSON.stringify(account.toJSON(), null, 2));
 
-    // validate (if email was changed)
-    if (params.email && account.email !== params.email && await db.Account.findOne({ where: { email: params.email } })) {
-        throw 'Email "' + params.email + '" is already taken';
+        // validate (if email was changed)
+        if (params.email && account.email !== params.email && await db.Account.findOne({ where: { email: params.email } })) {
+            throw 'Email "' + params.email + '" is already taken';
+        }
+
+        // hash password if it was entered
+        if (params.password) {
+            params.passwordHash = await hash(params.password);
+        }
+
+        // CRITICAL: Update status directly on raw model
+        if (typeof params.status !== 'undefined') {
+            try {
+                console.log(`STATUS UPDATE: Explicitly setting to "${params.status}" - BEFORE =`, account.status);
+                
+                // Ensure status is properly capitalized to match ENUM values
+                let statusValue = params.status;
+                if (typeof statusValue === 'string') {
+                    // Convert to proper capitalization: 'Active' or 'Inactive'
+                    statusValue = statusValue.charAt(0).toUpperCase() + statusValue.slice(1).toLowerCase();
+                    if (statusValue !== 'Active' && statusValue !== 'Inactive') {
+                        statusValue = 'Inactive'; // Default to Inactive for invalid values
+                    }
+                }
+                
+                // Force status update with direct assignment
+                account.setDataValue('status', statusValue);
+                account.previous('status');
+                account.changed('status', true); // Force Sequelize to consider it changed
+                
+                console.log(`STATUS AFTER EXPLICIT ASSIGNMENT:`, account.status);
+            } catch (statusError) {
+                console.error('ERROR UPDATING STATUS:', statusError);
+            }
+        }
+
+        // Copy other params to account and save
+        Object.assign(account, params);
+        account.updated = Date.now();
+        
+        // Double-check status is set correctly before save
+        console.log('FINAL PRE-SAVE STATUS CHECK:', account.status);
+        
+        // Save with extra logging
+        console.log('SAVING - Account with status:', account.status);
+        // Force Sequelize to include status in the UPDATE query
+        const savedAccount = await account.save({
+            fields: ['title', 'firstName', 'lastName', 'email', 'role', 'status', 'updated']
+        });
+        console.log('AFTER - Account Status:', savedAccount.status);
+        console.log('AFTER - Full Account:', JSON.stringify(savedAccount.toJSON(), null, 2));
+        console.log('UPDATE ACCOUNT END:', new Date().toISOString());
+        console.log('==========================================');
+
+        return basicDetails(account);
+    } catch (error) {
+        console.error('UPDATE ACCOUNT ERROR:', error);
+        throw error;
     }
-
-    // hash password if it was entered
-    if (params.password) {
-        params.passwordHash = await hash(params.password);
-    }
-
-    // copy params to account and save
-    Object.assign(account, params);
-    account.updated = Date.now();
-    await account.save();
-
-    return basicDetails(account);
 }
 
 async function _delete(id) {
     const account = await getAccount(id);
     await account.destroy();
+}
+
+async function resendVerification({ email }, origin) {
+    const account = await db.Account.findOne({ where: { email } });
+    if (!account) return; // do not reveal if account exists
+    if (account.verified) return; // already verified
+    account.verificationToken = randomTokenString();
+    await account.save();
+    await sendVerificationEmail(account, origin);
 }
 
 // helper functions
@@ -253,8 +336,8 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-    const { id, title, firstName, lastName, email, role, created, updated, isVerified } = account;
-    return { id, title, firstName, lastName, email, role, created, updated, isVerified };
+    const { id, title, firstName, lastName, email, role, status, created, updated, isVerified } = account;
+    return { id, title, firstName, lastName, email, role, status, created, updated, isVerified };
 }
 
 async function sendVerificationEmail(account, origin) {

@@ -10,7 +10,7 @@
                 <tr>
                     <th>Type</th>
                     <th>Employee</th>
-                    <th>Description</th>
+                    <th>Message</th>
                     <th>Status</th>
                     <th>Created Date</th>
                     <th>Actions</th>
@@ -19,20 +19,28 @@
             <tbody>
                 <tr *ngFor="let workflow of workflows">
                     <td>{{workflow.type}}</td>
-                    <td>{{workflow.employee?.account?.firstName}} {{workflow.employee?.account?.lastName}}</td>
-                    <td>{{workflow.description}}</td>
+                    <td>{{workflow.employee?.user?.firstName}} {{workflow.employee?.user?.lastName}}</td>
+                    <td>{{workflow.message}}</td>
                     <td>
                         <span class="badge" [ngClass]="{
                             'bg-warning': workflow.status === 'Pending',
                             'bg-success': workflow.status === 'Approved',
                             'bg-danger': workflow.status === 'Rejected'
                         }">{{workflow.status}}</span>
+                        <select class="form-select form-select-sm mt-1" 
+                            [disabled]="workflow.isUpdating"
+                            [(ngModel)]="workflow.status" 
+                            (change)="updateStatus(workflow.id, workflow.status)">
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <div *ngIf="workflow.isUpdating" class="spinner-border spinner-border-sm mt-1"></div>
                     </td>
                     <td>{{workflow.createdAt | date}}</td>
                     <td style="white-space: nowrap">
                         <a routerLink="edit/{{workflow.id}}" class="btn btn-sm btn-primary me-1">Update</a>
-                        <button (click)="deleteWorkflow(workflow.id)" class="btn btn-sm btn-danger"
-                            [disabled]="workflow.isDeleting">
+                        <button (click)="deleteWorkflow(workflow.id)" class="btn btn-sm btn-danger">
                             <span *ngIf="workflow.isDeleting" class="spinner-border spinner-border-sm"></span>
                             <span *ngIf="!workflow.isDeleting">Delete</span>
                         </button>
