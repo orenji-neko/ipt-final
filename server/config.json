@@ -1,0 +1,19 @@
+{
+    "database": {
+      "host": "localhost",
+      "port": 3306,
+      "user": "root",
+      "password": "",
+      "database": "ipt_finals"
+    },
+    "secret": "your-secret-key",
+    "emailFrom": "noreply@example.com",
+    "smtpOptions": {
+      "host": "smtp.ethereal.email",
+      "port": 587,
+      "auth": {
+        "user": "antonietta.yost30@ethereal.email",
+        "pass": "saD7DseBy4xfZCt1pM"
+      }
+    }
+  }
