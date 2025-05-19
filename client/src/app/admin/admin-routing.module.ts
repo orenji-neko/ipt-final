@@ -14,9 +14,13 @@ import { AddEditComponent as RequestAddEdit } from './requests/add-edit.componen
 
 const routes: Routes = [
     {
-        path: '', component: LayoutComponent,
+        path: '', 
+        component: LayoutComponent,
         children: [
-            { path: '', component: OverviewComponent },
+            { 
+                path: '', 
+                component: OverviewComponent 
+            },
             {
                 path: 'accounts',
                 loadChildren: () => import('./accounts/accounts.module').then(m => m.AccountsModule)

@@ -2,15 +2,11 @@
     <!-- main nav -->
     <nav class="navbar navbar-expand navbar-dark bg-dark" *ngIf="account">
         <div class="navbar-nav">
+            <!-- Default Routes -->
             <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
                 class="nav-item nav-link">Home</a>
-            <a routerLink="/overview" routerLinkActive="active" class="nav-item nav-link">Overview</a>
-            <a routerLink="/accounts" routerLinkActive="active" class="nav-item nav-link">Accounts</a>
-            <a routerLink="/employees" routerLinkActive="active" class="nav-item nav-link">Employees</a>
-            <a routerLink="/departments" routerLinkActive="active" class="nav-item nav-link">Departments</a>
-            <a routerLink="/workflows" routerLinkActive="active" class="nav-item nav-link">Workflows</a>
-            <a routerLink="/requests" routerLinkActive="active" class="nav-item nav-link">Requests</a>
             <a routerLink="/profile" routerLinkActive="active" class="nav-item nav-link">Profile</a>
+            <!-- Admin links -->
             <a *ngIf="account.role === Role.Admin" routerLink="/admin" routerLinkActive="active"
                 class="nav-item nav-link">Admin</a>
             <a (click)="logout()" class="nav-item nav-link">Logout</a>
@@ -20,6 +16,8 @@
     <!-- global alert -->
     <alert></alert>
 
-    <!-- main router outlet -->
-    <router-outlet></router-outlet>
+    <main>
+        <!-- main router outlet -->
+        <router-outlet></router-outlet>
+    </main>
 </div>

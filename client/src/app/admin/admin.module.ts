@@ -21,6 +21,7 @@ import { AddEditComponent as WorkflowAddEdit } from './workflows/add-edit.compon
 // Request components
 import { RequestListComponent } from './requests/request-list.component';
 import { AddEditComponent as RequestAddEdit } from './requests/add-edit.component';
+import { SubnavComponent } from './subnav.component';
 
 @NgModule({
     imports: [
@@ -30,6 +31,7 @@ import { AddEditComponent as RequestAddEdit } from './requests/add-edit.componen
     ],
     declarations: [
         LayoutComponent,
+        SubnavComponent,
         OverviewComponent,
         EmployeeListComponent,
         EmployeeAddEdit,
