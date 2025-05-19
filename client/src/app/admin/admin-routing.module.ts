@@ -12,6 +12,7 @@ import { AddEditComponent as WorkflowAddEdit } from './workflows/add-edit.compon
 import { RequestListComponent } from './requests/request-list.component';
 import { AddEditComponent as RequestAddEdit } from './requests/add-edit.component';
 import { EmployeeWorkflowListComponent } from './employees/employee-workflow-list.component';
+import { SubnavComponent } from './subnav.component';
 
 const routes: Routes = [
     {
@@ -60,6 +61,11 @@ const routes: Routes = [
                 ]
             }
         ]
+    },
+    {
+        path: '',
+        component: SubnavComponent,
+        outlet: 'subnav'
     }
 ];
 
