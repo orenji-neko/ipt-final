@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { AdminRoutingModule } from './admin-routing.module';
@@ -9,6 +9,7 @@ import { OverviewComponent } from './overview.component';
 // Employee components
 import { EmployeeListComponent } from './employees/employee-list.component';
 import { AddEditComponent as EmployeeAddEdit } from './employees/add-edit.component';
+import { EmployeeWorkflowListComponent } from './employees/employee-workflow-list.component';
 
 // Department components
 import { DepartmentListComponent } from './departments/department-list.component';
@@ -27,6 +28,7 @@ import { SubnavComponent } from './subnav.component';
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         AdminRoutingModule
     ],
     declarations: [
@@ -40,7 +42,8 @@ import { SubnavComponent } from './subnav.component';
         WorkflowListComponent,
         WorkflowAddEdit,
         RequestListComponent,
-        RequestAddEdit
+        RequestAddEdit,
+        EmployeeWorkflowListComponent
     ]
 })
 export class AdminModule { }

@@ -11,6 +11,8 @@ import { WorkflowListComponent } from './workflows/workflow-list.component';
 import { AddEditComponent as WorkflowAddEdit } from './workflows/add-edit.component';
 import { RequestListComponent } from './requests/request-list.component';
 import { AddEditComponent as RequestAddEdit } from './requests/add-edit.component';
+import { EmployeeWorkflowListComponent } from './employees/employee-workflow-list.component';
+import { SubnavComponent } from './subnav.component';
 
 const routes: Routes = [
     {
@@ -30,7 +32,8 @@ const routes: Routes = [
                 children: [
                     { path: '', component: EmployeeListComponent },
                     { path: 'add', component: EmployeeAddEdit },
-                    { path: 'edit/:id', component: EmployeeAddEdit }
+                    { path: 'edit/:id', component: EmployeeAddEdit },
+                    { path: ':id/workflows', component: EmployeeWorkflowListComponent }
                 ]
             },
             {
@@ -59,43 +62,10 @@ const routes: Routes = [
             }
         ]
     },
-    // Additional routes for direct access
-    { path: 'overview', component: OverviewComponent },
     {
-        path: 'accounts',
-        loadChildren: () => import('./accounts/accounts.module').then(m => m.AccountsModule)
-    },
-    {
-        path: 'employees',
-        children: [
-            { path: '', component: EmployeeListComponent },
-            { path: 'add', component: EmployeeAddEdit },
-            { path: 'edit/:id', component: EmployeeAddEdit }
-        ]
-    },
-    {
-        path: 'departments',
-        children: [
-            { path: '', component: DepartmentListComponent },
-            { path: 'add', component: DepartmentAddEdit },
-            { path: 'edit/:id', component: DepartmentAddEdit }
-        ]
-    },
-    {
-        path: 'workflows',
-        children: [
-            { path: '', component: WorkflowListComponent },
-            { path: 'add', component: WorkflowAddEdit },
-            { path: 'edit/:id', component: WorkflowAddEdit }
-        ]
-    },
-    {
-        path: 'requests',
-        children: [
-            { path: '', component: RequestListComponent },
-            { path: 'add', component: RequestAddEdit },
-            { path: 'edit/:id', component: RequestAddEdit }
-        ]
+        path: '',
+        component: SubnavComponent,
+        outlet: 'subnav'
     }
 ];
 

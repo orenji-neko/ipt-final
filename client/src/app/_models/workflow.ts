@@ -2,6 +2,7 @@ export const WorkflowType = {
     Onboarding: 'Onboarding' as const,
     DepartmentTransfer: 'DepartmentTransfer' as const,
     EmployeeRequest: 'EmployeeRequest' as const,
+    RequestApproval: 'Request Approval' as const,
     Other: 'Other' as const
 };
 
@@ -30,4 +31,9 @@ export interface Workflow {
     updatedAt: Date;
     isDeleting?: boolean;
     isUpdating?: boolean;
+    updating?: boolean;
+    message?: string;
+    details?: any;
+    requestUpdated?: boolean;
+    requestUpdateMessage?: string;
 } 
