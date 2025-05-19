@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://ipt-final-phsr.onrender.com/api'
+    apiUrl: 'https://dal-ipt-final.onrender.com/api'
 }
