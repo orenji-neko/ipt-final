@@ -1,13 +1,36 @@
+# Client Application
 
-To run in local
+This is the client-side application built with Angular.
+
+## Prerequisites
+
+- Node.js (v14 or higher)
+- npm (Node Package Manager)
+
+## Installation
+
 ```bash
 npm install
+```
+
+## Development Server
+
+To run the application in development mode:
+
+```bash
 npm run start
 ```
 
-To run in production
+The application will be available at `http://localhost:4200`
+
+## Production Build
+
+To build and run the application in production mode:
+
 ```bash
-npm install
+# Build the application
 ng build
+
+# Serve the production build
 ng serve -c production
 ```
