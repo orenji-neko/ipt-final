@@ -8,21 +8,87 @@ initialize();
 
 async function initialize() {
     try {
-        // create db if it doesn't already exist
-        const { host, port, user, password, database } = config.database;
+        let sequelize;
+        
+        // Check if running in production environment (Render)
+        if (process.env.NODE_ENV === 'production') {
+            console.log('Initializing database in production mode');
+            
+            // Use environment variables for database connection in production
+            const dbUrl = process.env.DATABASE_URL;
+            
+            if (dbUrl) {
+                // If using connection URL
+                console.log('Using DATABASE_URL for connection');
+                sequelize = new Sequelize(dbUrl, {
+                    dialect: 'mysql',
+                    dialectOptions: {
+                        ssl: {
+                            rejectUnauthorized: false
+                        }
+                    },
+                    logging: console.log
+                });
+            } else if (process.env.DB_HOST && process.env.DB_USER && process.env.DB_PASSWORD && process.env.DB_NAME) {
+                // If using separate environment variables
+                console.log('Using environment variables for database connection');
+                sequelize = new Sequelize(
+                    process.env.DB_NAME,
+                    process.env.DB_USER,
+                    process.env.DB_PASSWORD, 
+                    {
+                        host: process.env.DB_HOST,
+                        port: process.env.DB_PORT || 3306,
+                        dialect: 'mysql',
+                        dialectOptions: {
+                            ssl: {
+                                rejectUnauthorized: false
+                            }
+                        },
+                        logging: console.log
+                    }
+                );
+            } else if (config.production_database) {
+                // Fallback to config.json production_database settings
+                console.log('Using production_database settings from config.json');
+                const { host, port, user, password, database, ssl } = config.production_database;
+                
+                const dialectOptions = ssl ? {
+                    ssl: {
+                        rejectUnauthorized: false
+                    }
+                } : {};
+                
+                sequelize = new Sequelize(database, user, password, {
+                    host: host,
+                    port: port || 3306,
+                    dialect: 'mysql',
+                    dialectOptions,
+                    logging: console.log
+                });
+            } else {
+                throw new Error('No database configuration found for production environment');
+            }
+        } else {
+            // Development mode - use config.json
+            console.log('Initializing database in development mode');
+            
+            // create db if it doesn't already exist
+            const { host, port, user, password, database } = config.database;
 
-        // Step 1: Connect without database and create it if needed
-        const connection = await mysql.createConnection({ host, port, user, password });
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
-        await connection.end();
+            // Step 1: Connect without database and create it if needed
+            const connection = await mysql.createConnection({ host, port, user, password });
+            await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
+            await connection.end();
 
-        // Step 2: Now connect with Sequelize as usual
-        const sequelize = new Sequelize(database, user, password, { 
-            host: host,
-            port: port,
-            dialect: 'mysql',
-            logging: console.log // Enable logging
-        });
+            // Step 2: Now connect with Sequelize as usual
+            sequelize = new Sequelize(database, user, password, { 
+                host: host,
+                port: port,
+                dialect: 'mysql',
+                logging: console.log // Enable logging
+            });
+        }
 
         // Make sequelize available
         db.sequelize = sequelize;

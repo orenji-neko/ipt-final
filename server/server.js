@@ -12,7 +12,7 @@ app.use(cookieParser());
 
 // allow cors requests from any origin and with credentials
 app.use(cors({
-    origin: ['https://ipt-final-alpha.vercel.app', 'https://ipt-final-phsr.onrender.com', 'http://localhost:4200'],
+    origin: ['https://ipt-final-alpha.vercel.app', 'https://ipt-final-phsr.onrender.com', 'https://ipt-final-client.onrender.com', 'http://localhost:4200'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
